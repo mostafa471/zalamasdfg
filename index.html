@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>خربش وادلع</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  body {
+    margin: 0;
+    background: #000;
+    font-family: "Cairo", sans-serif;
+    color: #fff;
+    display: flex;
+    justify-content: center;
+  }
+  .wrapper {
+    max-width: 500px;
+    width: 100%;
+    margin: auto;
+    padding: 15px;
+    border: 12px solid #d92727;
+    border-radius: 0;
+    box-sizing: border-box;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 30px;
+    letter-spacing: 2px;
+  }
+  
+  .score-container {
+    display: flex;
+    justify-content: space-around;
+    text-align: center;
+    margin-bottom: 25px;
+    gap: 15px;
+  }
+
+  .score-box {
+    font-size: 26px;
+    padding: 12px;
+    background: #111;
+    border-radius: 10px;
+    flex: 1;
+  }
+
+  .main-grid {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 6px;
+    justify-items: center;
+    margin-bottom: 45px;
+  }
+  
+  .dot {
+    width: 32px;
+    height: 32px;
+    background: #bfbfbf;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: 0.2s;
+    position: relative;
+  }
+  .dot.active {
+    background: #f6c23e;
+    transform: scale(1.12);
+  }
+  .dot:hover {
+    background: #d0d0d0;
+  }
+  .dot.active:hover {
+    background: #f8d56e;
+  }
+
+  .footer-btns {
+    text-align: center;
+    margin-top: 35px;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+  }
+  button {
+    padding: 12px 22px;
+    font-size: 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin: 5px;
+  }
+  .reset {
+    background: #e53935;
+    color: #fff;
+  }
+
+  .heart-btn, .places-heart-btn {
+    background: #e53935;
+    color: #fff;
+    font-size: 28px;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 3px solid #fff;
+    animation: pulse 1.5s infinite;
+    box-shadow: 0 0 15px rgba(229, 57, 53, 0.7);
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 15px rgba(229, 57, 53, 0.7);
+    }
+    50% {
+      transform: scale(1.1);
+      box-shadow: 0 0 25px rgba(229, 57, 53, 1);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 15px rgba(229, 57, 53, 0.7);
+    }
+  }
+
+  /* Card Modal Styles */
+  .card-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .modal-content-wrapper {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .card-image-wrapper {
+    position: relative;
+    display: inline-block;
+  }
+
+  .card-image {
+    display: block;
+    max-width: 100vw;
+    max-height: 80vh;
+    width: auto;
+    height: auto;
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(217, 39, 39, 0.3);
+    border: 3px solid #d92727;
+  }
+
+  .card-text {
+    font-size: 24px;
+    color: #fff;
+    line-height: 1.6;
+    margin: 20px 0 0 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    padding: 0 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #1e1e1e 0%, #2a2a2a 100%);
+    border-radius: 15px;
+    padding: 15px 25px;
+    border: 2px solid #d92727;
+    max-width: 90%;
+    animation: slideUp 0.4s ease 0.2s both;
+  }
+
+  @keyframes slideUp {
+    from {
+      transform: translateY(20px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .close-card, .close-bonus, .close-places {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 50px;
+    height: 50px;
+    background: #d92727;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+    box-shadow: 0 5px 20px rgba(217, 39, 39, 0.5);
+  }
+
+  .close-card:hover, .close-bonus:hover, .close-places:hover {
+    background: #ff4444;
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  .heart-animation {
+    position: absolute;
+    color: #ff1493;
+    font-size: 25px;
+    animation: float 3s ease-in-out infinite;
+    pointer-events: none;
+    z-index: 5;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0) rotate(0deg);
+      opacity: 0.7;
+    }
+    50% {
+      transform: translateY(-30px) rotate(15deg);
+      opacity: 1;
+    }
+  }
+
+  /* Bonus Modal Styles */
+  .bonus-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1001;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .bonus-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 20px;
+    border: 4px solid #d92727;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(217, 39, 39, 0.5);
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .bonus-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #f6c23e;
+  }
+
+  .places-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    text-align: right;
+  }
+
+  .place-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    background: #2a2a2a;
+    border-radius: 10px;
+    transition: background 0.2s;
+  }
+  .place-item:hover {
+    background: #333;
+  }
+
+  .place-message {
+    font-size: 16px;
+    color: #fff;
+    flex-grow: 1;
+    padding-left: 10px;
+  }
+
+  .place-dot {
+    width: 22px;
+    height: 22px;
+    background: #555;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    flex-shrink: 0;
+  }
+  .place-dot.selected {
+    background: #f6c23e;
+    box-shadow: 0 0 10px #f6c23e;
+  }
+
+  /* Places Modal Styles */
+  .places-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1003;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .places-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a1a1a;
+    padding: 30px;
+    border-radius: 20px;
+    border: 4px solid #d92727;
+    text-align: center;
+    box-shadow: 0 0 30px rgba(217, 39, 39, 0.5);
+    width: 90%;
+    max-width: 450px;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+
+  .places-content h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    font-size: 28px;
+    color: #f6c23e;
+  }
+
+
+  /* Completion Modal Styles */
+  .completion-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.95);
+    z-index: 1002;
+    animation: fadeIn 0.5s ease;
+  }
+
+  .completion-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(145deg, #2a0845, #370617);
+    padding: 40px;
+    border-radius: 25px;
+    border: 5px solid #f72585;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(247, 37, 133, 0.7);
+    width: 90%;
+    max-width: 450px;
+    box-sizing: border-box;
+  }
+
+  .completion-content h2 {
+    font-size: 32px;
+    color: #ffbe0b;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #ffbe0b;
+  }
+
+  .completion-content p {
+    font-size: 22px;
+    line-height: 1.7;
+    color: #fff;
+  }
+  
+  .completion-content img {
+    max-width: 150px;
+    margin-bottom: 20px;
+    border-radius: 50%;
+    border: 3px solid #ffbe0b;
+  }
+
+  .close-completion {
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 50px;
+    height: 50px;
+    background: #f72585;
+    border: none;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    z-index: 10;
+  }
+
+  .close-completion:hover {
+    background: #ff006e;
+    transform: rotate(90deg) scale(1.1);
+  }
+
+  /* Mobile responsiveness */
+  @media (max-width: 600px) {
+    body { min-height: 100vh; }
+    .wrapper { padding: 8px; border-width: 8px; }
+    h1 { font-size: 22px; margin-bottom: 8px; }
+    .score-container { margin-bottom: 10px; gap: 8px; }
+    .score-box { font-size: 16px; padding: 8px 5px; }
+    .main-grid { gap: 3px; margin-bottom: 15px; }
+    .dot { width: 28px; height: 28px; }
+    .footer-btns { margin-top: 10px; gap: 15px; }
+    button { padding: 10px 18px; font-size: 18px; }
+    .heart-btn, .places-heart-btn { width: 50px; height: 50px; font-size: 24px; }
+    .bonus-content, .places-content { padding: 20px; }
+    .bonus-content h2, .places-content h2 { font-size: 22px; }
+    .place-message { font-size: 14px; }
+    .completion-content { padding: 25px; }
+    .completion-content h2 { font-size: 24px; }
+    .completion-content p { font-size: 18px; }
+    .card-text { font-size: 18px; padding: 12px 20px; margin: 15px 0 0 0; }
+    .card-image { max-height: 70vh; }
+    .close-card, .close-bonus, .close-places, .close-completion {
+      width: 45px; height: 45px; font-size: 24px; top: -15px; right: -15px;
+    }
+  }
+  @media (max-width: 600px) and (orientation: landscape) {
+    .card-image { max-height: 60vh; }
+    .card-text { font-size: 16px; padding: 10px 15px; }
+  }
+</style>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>خربش وادلع</h1>
+    
+    <div class="score-container">
+      <div class="score-box"> الكروت المفتوحة: <span id="totalPoints">0</span></div>
+      <div class="score-box"> الكروت المتبقية: <span id="remainingPoints">100</span></div>
+    </div>
+
+    <div class="main-grid" id="mainGrid"></div>
+
+    <div class="footer-btns">
+      <button class="heart-btn" id="heartBtn">❤️</button>
+      <button class="reset" id="resetBtn"> تجديد الحب </button>
+      <button class="places-heart-btn" id="placesBtn">💖</button>
+    </div>
+  </div>
+
+  <!-- Card Modal -->
+  <div class="card-modal" id="cardModal">
+    <div class="modal-content-wrapper">
+      <div class="card-image-wrapper">
+        <button class="close-card" id="closeCard">&times;</button>
+        <img class="card-image" id="cardImage" src="" alt="">
+      </div>
+      <p class="card-text" id="cardText"></p>
+    </div>
+  </div>
+
+  <!-- Bonus Modal -->
+  <div class="bonus-modal" id="bonusModal">
+    <div class="bonus-content">
+      <button class="close-bonus" id="closeBonus">&times;</button>
+      <h2>❤️ رسائل حب اضافي ❤️</h2>
+      <div class="places-grid" id="bonusGrid"></div>
+    </div>
+  </div>
+
+  <!-- Places Modal -->
+  <div class="places-modal" id="placesModal">
+    <div class="places-content">
+      <button class="close-places" id="closePlaces">&times;</button>
+      <h2>اماكن في البيت</h2>
+      <div class="places-grid" id="placesGrid"></div>
+    </div>
+  </div>
+
+  <!-- Completion Modal -->
+  <div class="completion-modal" id="completionModal">
+    <div class="completion-content">
+      <button class="close-completion" id="closeCompletion">&times;</button>
+      <h2>🎉 مبروك! 🎉</h2>
+      <img src="https://i.imgur.com/G5sC7hV.png" alt="Celebration">
+      <p>
+        لقد فتحت كل النقاط! <br>
+        رحلتنا كانت مليئة بالذكريات الجميلة وكل نقطة كانت قصة حب جديدة. <br>
+        شكراً لوجودك في حياتي، أنت أجمل ما حدث لي.
+      </p>
+    </div>
+  </div>
+
+<script>
+  // تم تحديث مصفوفة الكروت بالنصوص الجديدة بالترتيب المحدد
+  // The cards array has been updated with the new texts in the specified order
+  const cards = [
+    { text: "وضعية:اﻟﺠسر", media: "gifs/1.gif", type: "gif" },
+    { text: "وضعية: الخيزران المتشقق", media: "gifs/2.gif", type: "gif" },
+    { text: "وضعية اﻟﻨﻴﺮﻓﺎﻧﺎ", media: "gifs/3.gif", type: "gif" },
+    { text: "وضعية ذا إﻛﺲ", media: "gifs/4.gif", type: "gif" },
+    { text: "وضعية اﻟﻤﺜﻠﺚ اﻟﻤﺘﻮﻫﺞ", media: "gifs/5.gif", type: "gif" },
+    { text: "وضعية ﻋﺠﻠﺔ ﻛﺎﺛﺮﻳﻦ", media: "images/6.jpg", type: "image" },
+    { text: "وضعية:اﻟﻨﻤﺮ ", media: "images/7.jpg", type: "image" },
+    { text: "وضعية:المصاصة", media: "gifs/8.gif", type: "gif" },
+    { text: "اغراء", media: "gifs/9.gif", type: "gif" },
+    { text: "وضعية: قانون التوازن", media: "gifs/10.gif", type: "gif" },
+    { text: "  وضعية اﻟﺼﻌﻮد إﻟﻰ اﻟﺮﻏﺒﺔ", media: "gifs/11.gif", type: "gif" },
+    { text: " 🦋وضعية الفراشة", media: "gifs/12.gif", type: "gif" },
+    { text: "  وضعية القرد", media: "gifs/13.gif", type: "gif" },
+    { text: "وضعية الانزلاق", media: "gifs/14.gif", type: "gif" },
+    { text: " وضعية 🔒✨ القفل", media: "gifs/15.gif", type: "gif" },
+    { text: "وضعية اﻟﺤﺼﺎن اﻟﻬﺰاز اﻟﺮاﺋﻊ", media: "gifs/16.gif", type: "gif" },
+    { text: "وضعية:ذا دﺑﻞ دﻳﻜﺮ", media: "gifs/17.gif", type: "gif" },
+    { text: "وضعية:اﻟﻨسر", media: "images/18.jpg", type: "image" },
+    { text: "وضعية الإﻳﺮوﺗﻴﻜﻴﺔ v", media: "gifs/19.gif", type: "gif" },
+    { text: "وضعية:اﻟﻜﻮﻧﻐﺮس اﻟﻤﻌﻠﻖ", media: "gifs/20.gif", type: "gif" },
+    { text: "وضعية:الإﻏﻮاء", media: "images/21.jpg", type: "image" },
+    { text: "البركان الثائر", media: "gifs/22.gif", type: "gif" },
+    { text: "وضعية:اﻟﺒطل", media: "images/23.jpg", type: "image" },
+    { text: "وضعية:اﻟﺪوﻟﻔﻴﻦ", media: "gifs/24.gif", type: "gif" },
+    { text: "وضعية:الكرسي الهزاز", media: "gifs/25.gif", type: "gif" },
+    { text: "وضعية:اﻟﻤﺤﺮاث", media: "gifs/26.gif", type: "gif" },
+    { text: "وضعية:اﻟﻮﺗﺪ", media: "images/27.jpg", type: "image" },
+    { text: "وضعية:اﻟﻜﻼﺳﻴﻜﻲ", media: "gifs/28.gif", type: "gif" },
+    { text: "وضعية:اﻟﺮﻛﻮع", media: "images/29.jpg", type: "image" },
+    { text: "الملكة", media: "gifs/30.gif", type: "gif" },
+    { text: "وضعية:اﻟﻜﺮسي اﻟﺼﻐﻴﺮ", media: "images/31.jpg", type: "image" },
+    { text: "وضعية:زﻫﺮة اﻟﻠﻮﺗﺲ ", media: "gifs/32.gif", type: "gif" },
+    { text: "وضعية:اﻟﺴﺎق اﻟﺸﻬﻮاﻧﻲ", media: "gifs/33.gif", type: "gif" },
+    { text: "وضعية:ﺗﻮازن اﻟﻘﺮﻓﺼﺎء", media: "gifs/34.gif", type: "gif" },
+    { text: "وضعية:اﻟﺠﺒﻞ اﻟﺴﺤﺮي", media: "gifs/35.gif", type: "gif" },
+    { text: "وضعية:الباندول", media: "gifs/36.gif", type: "gif" },
+    { text: "وضعية:اﻟﻤﺮوﺣﺔ", media: "gifs/37.gif", type: "gif" },
+    { text: "وضعية:البار", media: "gifs/38.gif", type: "gif" },
+    { text: "وضعية:ﻗﺎرب اﻟﺘﺠﺪﻳﻒ", media: "gifs/39.gif", type: "gif" },
+    { text: "علي الحائط", media: "gifs/40.gif", type: "gif" },
+    { text: "علي الوجة", media: "gifs/41.gif", type: "gif" },
+    { text: "وضعية:اﻟﻤﻘﺺ اﻟﻤﻌﻠﻖ", media: "gifs/42.gif", type: "gif" },
+    { text: "وضعية:النجم", media: "gifs/43.gif", type: "gif" },
+    { text: "وضعية:أﺳﻠﻮب اﻟﻜﻠﺐ", media: "images/44.jpg", type: "image" },
+    { text: "وضعية:راﻋﻲ اﻟﺒﻘﺮ اﻟﻌﻜسي", media: "gifs/45.gif", type: "gif" },
+    { text: "وضعية:السوبر", media: "images/46.jpg", type: "image" },
+    { text: "وضعية:الأﻣﺎزون", media: "gifs/47.gif", type: "gif" },
+    { text: "وضعية:الملاهي", media: "gifs/48.gif", type: "gif" },
+    { text: "عقارب الساعة", media: "images/49.jpg", type: "image" },
+    { text: "اندر تيكر", media: "gifs/50.gif", type: "gif" },
+    { text: "وضعية:المركب", media: "images/51.jpg", type: "image" },
+    { text: "وضعية:اﻟﺤﻠﺰون", media: "gifs/52.gif", type: "gif" },
+    { text: "وضعية:الاﻧﺰلاق", media: "gifs/53.gif", type: "gif" },
+    { text: "وضعية:الاكيل", media: "gifs/54.gif", type: "gif" },
+    { text: "وضعية:ال G", media: "images/55.jpg", type: "image" },
+    { text: "وضعية:ذا ﺟﺮﻳﺐ", media: "gifs/56.gif", type: "gif" },
+    { text: "وضعية: التحدي", media: "gifs/57.gif", type: "gif" },
+    { text: "وضعية:ﻗﻮس اﻟﻨصر", media: "gifs/58.gif", type: "gif" },
+    { text: "وضعية:الكلبش", media: "images/59.jpg", type: "image" },
+    { text: "وضعية:المطبخ", media: "gifs/60.gif", type: "gif" },
+    { text: "وضعية: الجانبية", media: "images/61.jpg", type: "image" },
+    { text: "وضعية:الوتد", media: "images/62.jpg", type: "image" },
+    { text: "وضعية:الاﻗﺘﺮاح", media: "gifs/63.gif", type: "gif" },
+    { text: "وضعية:اللقاء العاطفي", media: "gifs/64.gif", type: "gif" },
+    { text: "وضعية:زﻫﺮة اﻟﻠﻮﺗﺲ", media: "images/65.jpg", type: "image" },
+    { text: "وضعية:ﺣﻮرﻳﺔ اﻟﺒﺤﺮ", media: "gifs/66.gif", type: "gif" },
+    { text: "وضعية:اﻟﻨﻤﺮ اﻟﻤﺴﺘﻠﻖ", media: "gifs/67.gif", type: "gif" },
+    { text: "وضعية:المشبك", media: "gifs/68.gif", type: "gif" },
+    { text: "وضعية:عربه الركوع", media: "gifs/69.gif", type: "gif" },
+    { text: "وضعية:المرجان", media: "gifs/70.gif", type: "gif" },
+    { text: "وضعية:أﺑﻮ اﻟﻬﻮل", media: "gifs/71.gif", type: "gif" },
+    { text: "وضعية:المجداف الجانبي", media: "gifs/72.gif", type: "gif" },
+    { text: "وضعية:ابوالهول", media: "images/73.jpg", type: "image" },
+    { text: "وضعية:الراكب", media: "gifs/74.gif", type: "gif" },
+    { text: "وضعية:اﻟﺴﻮﺑﺮ ﻧﻮﻓﺎ", media: "images/75.jpg", type: "image" },
+    { text: "وضعية:اﻟﻌﻨﻜﺒﻮت", media: "gifs/76.gif", type: "gif" },
+    { text: "وضعية:السلة", media: "images/77.jpg", type: "image" },
+    { text: "وضعية:Yمنحني", media: "gifs/78.gif", type: "gif" },
+    { text: "وضعية:الحائط ", media: "gifs/79.gif", type: "gif" },
+    { text: "مص البزاز", media: "images/80.jpg", type: "image" },
+    { text: "وضعية:اﻟﺴﺮج اﻟﺠﺎﻧﺒﻲ", media: "gifs/81.gif", type: "gif" },
+    { text: "وضعية:السلسلة", media: "gifs/82.gif", type: "gif" },
+    { text: "وضعية:الرمان", media: "gifs/83.gif", type: "gif" },
+    { text: "وضعية:إﻧﺪراﻧﻲ", media: "images/84.jpg", type: "image" },
+    { text: "وضعية:ﻣﻨﺼﺔ اﻟﻜﺘﻒ", media: "images/85.jpg", type: "image" },
+    { text: "وضعية:اﻟﻼﺑﺘﻮب", media: "images/86.jpg", type: "image" },
+    { text: "وضعية:ﺳﻴﺪ اﻟﻔﺨﺬ", media: "gifs/87.gif", type: "gif" },
+    { text: "وضعية:الحصان", media: "gifs/88.gif", type: "gif" },
+    { text: "وضعية:الضفضع", media: "gifs/89.gif", type: "gif" },
+    { text: "وضعية:المساعد", media: "images/90.jpg", type: "image" },
+    { text: "وضعية:اﻟﺘﻘﺎﻃﻊ", media: "images/91.jpg", type: "image" },
+    { text: "ايس كريم", media: "gifs/92.gif", type: "gif" },
+    { text: "وضعية:استرخاء", media: "images/93.jpg", type: "image" },
+    { text: "وضعية:ﻓﺮﺳﺎﻧﻤﻮن", media: "images/94.jpg", type: "image" },
+    { text: "مفتوح ﻋﻠﻰ ﻧﻄﺎق واﺳﻊ", media: "images/95.jpg", type: "image" },
+    { text: "وضعية:الاﻧﺰلاق اﻟﻌﻜسي", media: "gifs/96.gif", type: "gif" },
+    { text: "وضعية:الاستكنان", media: "images/97.jpg", type: "image" },
+    { text: "الجبل", media: "images/98.jpg", type: "image" },
+    { text: "قوص قزح", media: "images/99.jpg", type: "image" },
+    { text: "69", media: "gifs/100.gif", type: "gif" }
+  ];
+
+  const bonusMessages = [
+    "رسالة حب عند شروق الشمس",
+    "رسالة حب تحت المطر",
+    "رسالة حب مع أول قهوة",
+    "رسالة حب في نزهة عشوائية",
+    "رسالة حب قبل النوم",
+    "رسالة حب على ضوء القمر",
+    "رسالة حب في يوم ممطر",
+    "رسالة حب في موعد خاص",
+    "رسالة حب بلا مناسبة",
+    "رسالة حب بعد يوم طويل",
+    "رسالة حب لتشجيعك",
+    "رسالة حب لقول شكراً"
+  ];
+
+  const places = [
+    "رسالة غرام في غرفة النوم",
+    "رسالة غرام في المطبخ",
+    "رسالة غرام في غرفة المعيشة",
+    "رسالة غرام على الشرفة",
+    "رسالة غرام في الحمام",
+    "رسالة غرام عند المدخل",
+    "رسالة غرام في الحديقة",
+    "رسالة غرام في غرفة الدراسة",
+    "رسالة غرام في السطح",
+    "رسالة غرام في الممر",
+    "رسالة غرام في غرفة الطعام",
+    "رسالة غرام في المخزن"
+  ];
+
+  let total = 0;
+  let usedCards = [];
+  const totalPointsSpan = document.getElementById("totalPoints");
+  const remainingPointsSpan = document.getElementById("remainingPoints");
+  const resetBtn = document.getElementById("resetBtn");
+  const cardModal = document.getElementById("cardModal");
+  const cardImage = document.getElementById("cardImage");
+  const cardText = document.getElementById("cardText");
+  const closeCard = document.getElementById("closeCard");
+
+  const heartBtn = document.getElementById("heartBtn");
+  const bonusModal = document.getElementById("bonusModal");
+  const closeBonus = document.getElementById("closeBonus");
+  const bonusGrid = document.getElementById("bonusGrid");
+
+  const placesBtn = document.getElementById("placesBtn");
+  const placesModal = document.getElementById("placesModal");
+  const closePlaces = document.getElementById("closePlaces");
+  const placesGrid = document.getElementById("placesGrid");
+
+  const completionModal = document.getElementById("completionModal");
+  const closeCompletion = document.getElementById("closeCompletion");
+
+  const maxPossiblePoints = 100;
+
+  function createMainGrid() {
+    const grid = document.getElementById("mainGrid");
+    const totalDots = 100;
+    for (let i = 0; i < totalDots; i++) {
+      const dot = document.createElement("div");
+      dot.classList.add("dot");
+      dot.dataset.points = 1; 
+      dot.onclick = () => activateDot(dot);
+      grid.appendChild(dot);
+    }
+  }
+
+  function createBonusGrid() {
+    for (let i = 0; i < bonusMessages.length; i++) {
+      const item = document.createElement("div");
+      item.classList.add("place-item");
+
+      const message = document.createElement("span");
+      message.classList.add("place-message");
+      message.textContent = bonusMessages[i];
+
+      const dot = document.createElement("div");
+      dot.classList.add("place-dot");
+      dot.onclick = () => {
+        dot.classList.toggle("selected");
+      };
+
+      item.appendChild(message);
+      item.appendChild(dot);
+      bonusGrid.appendChild(item);
+    }
+  }
+
+  function createPlacesGrid() {
+    for (let i = 0; i < places.length; i++) {
+      const item = document.createElement("div");
+      item.classList.add("place-item");
+
+      const message = document.createElement("span");
+      message.classList.add("place-message");
+      message.textContent = places[i];
+
+      const dot = document.createElement("div");
+      dot.classList.add("place-dot");
+      dot.onclick = () => {
+        dot.classList.toggle("selected");
+      };
+
+      item.appendChild(message);
+      item.appendChild(dot);
+      placesGrid.appendChild(item);
+    }
+  }
+
+  function getRandomCard(cardArray, usedArray) {
+    if (usedArray.length >= cardArray.length) { usedArray = []; }
+    const availableCards = cardArray.filter((card, index) => !usedArray.includes(index));
+    const randomIndex = Math.floor(Math.random() * availableCards.length);
+    const selectedCard = availableCards[randomIndex];
+    const originalIndex = cardArray.indexOf(selectedCard);
+    usedArray.push(originalIndex);
+    return selectedCard;
+  }
+
+  function showCard() {
+    const card = getRandomCard(cards, usedCards);
+    displayCard(card);
+  }
+
+  function displayCard(card) {
+    const img = new Image();
+    img.onload = function() {
+      cardImage.src = card.media;
+      cardText.textContent = card.text;
+      cardModal.style.display = 'block';
+      for (let i = 0; i < 5; i++) { createFloatingHeart(); }
+    };
+    img.src = card.media;
+  }
+
+  function createFloatingHeart() {
+    const heart = document.createElement('div');
+    heart.className = 'heart-animation';
+    heart.innerHTML = '❤️';
+    heart.style.left = Math.random() * 100 + '%';
+    heart.style.top = Math.random() * 100 + '%';
+    heart.style.animationDelay = Math.random() * 2 + 's';
+    cardModal.appendChild(heart);
+    setTimeout(() => { heart.remove(); }, 3000);
+  }
+
+  function activateDot(dot) {
+    if (!dot.classList.contains("active")) {
+      dot.classList.add("active");
+      const pts = parseInt(dot.dataset.points, 10); 
+      total += pts;
+      updateScore();
+      showCard();
+    }
+  }
+
+  function updateScore() {
+    totalPointsSpan.textContent = total;
+    remainingPointsSpan.textContent = maxPossiblePoints - total;
+    if (total >= maxPossiblePoints && completionModal.style.display !== 'block') {
+      completionModal.style.display = 'block';
+    }
+  }
+
+  // Event Listeners
+  closeCard.onclick = () => { cardModal.style.display = 'none'; };
+  cardModal.onclick = (e) => { if (e.target === cardModal) { cardModal.style.display = 'none'; } };
+
+  heartBtn.onclick = () => { bonusModal.style.display = 'block'; };
+  closeBonus.onclick = () => { bonusModal.style.display = 'none'; };
+  bonusModal.onclick = (e) => { if (e.target === bonusModal) { bonusModal.style.display = 'none'; } };
+
+  placesBtn.onclick = () => { placesModal.style.display = 'block'; };
+  closePlaces.onclick = () => { placesModal.style.display = 'none'; };
+  placesModal.onclick = (e) => { if (e.target === placesModal) { placesModal.style.display = 'none'; } };
+
+  closeCompletion.onclick = () => { completionModal.style.display = 'none'; };
+  completionModal.onclick = (e) => { if (e.target === completionModal) { completionModal.style.display = 'none'; } };
+
+  resetBtn.onclick = () => {
+    total = 0;
+    usedCards = [];
+    totalPointsSpan.textContent = 0;
+    remainingPointsSpan.textContent = maxPossiblePoints;
+    document.querySelectorAll(".dot").forEach(dot => dot.classList.remove("active"));
+    document.querySelectorAll(".place-dot.selected").forEach(dot => dot.classList.remove("selected"));
+    cardModal.style.display = 'none';
+    bonusModal.style.display = 'none';
+    placesModal.style.display = 'none';
+    completionModal.style.display = 'none';
+  };
+
+  // Initialize grids when the page loads
+  createMainGrid();
+  createBonusGrid();
+  createPlacesGrid();
+</script>
+</body>
+</html>
